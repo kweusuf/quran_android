@@ -17,7 +17,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-
 public class QuranSettings {
   private static final String PREFS_FILE = "com.quran.labs.androidquran.per_installation";
 
@@ -245,7 +244,8 @@ public class QuranSettings {
 
       // allow specific flavors of the app to handle their own upgrade logic.
       // this is important because different flavors have different version codes, so
-      // common code here would likely be wrong for other flavors (unless it depends on
+      // common code here would likely be wrong for other flavors (unless it depends
+      // on
       // relative offsets to the version code instead of the actual version code).
       if (preferencesUpgrade.upgrade(appContext, version, BuildConfig.VERSION_CODE)) {
         // make sure that the version code now says that we're up to date.
@@ -406,19 +406,25 @@ public class QuranSettings {
   }
 
   public boolean didCheckPartialImages(String pageType) {
-    final Set<String> checkedSets =
-        perInstallationPrefs.getStringSet(Constants.PREF_CHECKED_PARTIAL_IMAGES,
-            Collections.emptySet());
+    final Set<String> checkedSets = perInstallationPrefs.getStringSet(Constants.PREF_CHECKED_PARTIAL_IMAGES,
+        Collections.emptySet());
     return checkedSets.contains(pageType);
   }
 
   public void setCheckedPartialImages(String pageType) {
-    final Set<String> checkedSets =
-        perInstallationPrefs.getStringSet(Constants.PREF_CHECKED_PARTIAL_IMAGES,
-            Collections.emptySet());
+    final Set<String> checkedSets = perInstallationPrefs.getStringSet(Constants.PREF_CHECKED_PARTIAL_IMAGES,
+        Collections.emptySet());
     final Set<String> setToSave = new HashSet<>(checkedSets);
     setToSave.add(pageType);
     perInstallationPrefs.edit()
         .putStringSet(Constants.PREF_CHECKED_PARTIAL_IMAGES, setToSave).apply();
+  }
+
+  public boolean isDownloadOnDemand(String pageType) {
+    return perInstallationPrefs.getBoolean("download_on_demand_" + pageType, "tajweed".equals(pageType));
+  }
+
+  public void setDownloadOnDemand(String pageType, boolean onDemand) {
+    perInstallationPrefs.edit().putBoolean("download_on_demand_" + pageType, onDemand).apply();
   }
 }

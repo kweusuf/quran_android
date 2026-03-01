@@ -93,27 +93,46 @@ class PageSelectActivity : AppCompatActivity() {
   private fun onPageTypeSelected(type: String) {
     val pageType = quranSettings.pageType
     if (pageType != type) {
-      isProcessing = true
-      scope.launch {
-        // migrate the bookmarks
-        presenter.migrateBookmarksData(pageType, type)
-
-        // persist the new page type
-        quranSettings.pageType = type
-
-        // Re-initialize the app-scoped DI graph so it binds the PageProvider for the newly selected type
-        val app = applicationContext as com.quran.labs.androidquran.QuranApplication
-        app.applicationComponent = app.initializeInjector()
-        app.applicationComponent.inject(app)
-
-        // Start QuranDataActivity freshly
-        val intent = Intent(this@PageSelectActivity, QuranDataActivity::class.java).apply {
-          addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)
+      androidx.appcompat.app.AlertDialog.Builder(this)
+        .setTitle(R.string.download_all_files_title)
+        .setMessage(R.string.download_all_files_message)
+        .setPositiveButton(R.string.download_all_files_yes) { _, _ ->
+          quranSettings.setDownloadOnDemand(type, false)
+          processPageTypeChange(pageType, type)
         }
-        startActivity(intent)
-        finish()
-      }
+        .setNegativeButton(R.string.download_all_files_no) { _, _ ->
+          quranSettings.setDownloadOnDemand(type, true)
+          processPageTypeChange(pageType, type)
+        }
+        .setOnCancelListener {
+          // If the user taps outside, we can just do nothing (don't switch mushaf)
+          // or we could default to on demand. Let's do nothing so they can make a clear choice.
+        }
+        .show()
     } else {
+      finish()
+    }
+  }
+
+  private fun processPageTypeChange(oldType: String, newType: String) {
+    isProcessing = true
+    scope.launch {
+      // migrate the bookmarks
+      presenter.migrateBookmarksData(oldType, newType)
+
+      // persist the new page type
+      quranSettings.pageType = newType
+
+      // Re-initialize the app-scoped DI graph so it binds the PageProvider for the newly selected type
+      val app = applicationContext as com.quran.labs.androidquran.QuranApplication
+      app.applicationComponent = app.initializeInjector()
+      app.applicationComponent.inject(app)
+
+      // Start QuranDataActivity freshly
+      val intent = Intent(this@PageSelectActivity, QuranDataActivity::class.java).apply {
+        addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)
+      }
+      startActivity(intent)
       finish()
     }
     isProcessing = false

@@ -15,6 +15,10 @@
     </string>
   <string name="downloadPrompt_ok">Yes</string>
   <string name="downloadPrompt_no">No</string>
+  <string name="download_all_files_title">Download all pages?</string>
+  <string name="download_all_files_message">Would you like to download all pages for the newly selected mushaf now? If you choose no, pages will be downloaded on demand as you read.</string>
+  <string name="download_all_files_yes">Download all files</string>
+  <string name="download_all_files_no">Download on demand</string>
   <string name="downloading_message">Please wait for the files to download (resume supported).</string>
   <string name="extracting_title">Processing&#8230;</string>
   <string name="menu_about">About Us</string>

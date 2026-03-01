@@ -210,8 +210,8 @@ class QuranDataPresenter @Inject internal constructor(
         false
       }
 
-      if ("tajweed" == pageType) {
-        // for tajweed, we download images on demand, so pretend we have them
+      if (quranSettings.isDownloadOnDemand(pageType)) {
+        // if user requested download pages on demand, we pretend we have them
         havePortrait = true
         needLandscapeImages = false
       }
