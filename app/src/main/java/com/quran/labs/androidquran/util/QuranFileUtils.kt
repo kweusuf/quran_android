@@ -47,6 +47,13 @@ class QuranFileUtils @Inject constructor(
   private val databaseBaseUrl: String = pageProvider.getDatabasesBaseUrl()
   private val ayahInfoBaseUrl: String = pageProvider.getAyahInfoBaseUrl()
 
+  // optional per-page URL override (e.g. Tajweed images on GitHub use a different path/filename)
+  private val individualPageUrlFn: ((Int, String) -> String?)? =
+    if (pageProvider.getIndividualPageUrl(1, "page001.png") != null)
+      pageProvider::getIndividualPageUrl
+    else
+      null
+
   // local paths
   private val databaseDirectory: String = pageProvider.getDatabaseDirectoryName()
   private val audioDirectory: String = pageProvider.getAudioDirectoryName()
@@ -306,7 +313,13 @@ class QuranFileUtils @Inject constructor(
     isRetry: Boolean
   ): Response {
     val base = imageBaseUrl
-    val urlString = (base + "width" + widthParam + File.separator + filename)
+    // If the provider has a custom per-page URL override (e.g. Tajweed), use it;
+    // otherwise fall back to the standard convention: baseUrl + "width" + widthParam + "/" + filename
+    val urlString = individualPageUrlFn?.let { fn ->
+      // extract the page number from filename "pageXXX.png"
+      val pageNumber = filename.removePrefix("page").removeSuffix(".png").toIntOrNull() ?: 0
+      fn(pageNumber, filename)
+    } ?: (base + "width" + widthParam + File.separator + filename)
     Timber.d("want to download: %s", urlString)
     val request = Builder()
         .url(urlString)

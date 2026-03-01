@@ -364,7 +364,7 @@ class AyahPlaybackFragment : AyahActionFragment() {
     private val ITEM_LAYOUT = R.layout.sherlock_spinner_item
     private val ITEM_DROPDOWN_LAYOUT = R.layout.sherlock_spinner_dropdown_item
     private const val MAX_REPEATS = 25
-    private val SPEEDS = listOf(0.5f, 0.75f, 1.0f, 1.25f, 1.5f)
+    private val SPEEDS = listOf(0.5f, 0.75f, 1.0f, 1.25f, 1.5f, 1.75f, 2.0f, 2.1f, 2.2f, 2.25f, 2.5f)
     private const val DEFAULT_SPEED_INDEX = 2
   }
 }

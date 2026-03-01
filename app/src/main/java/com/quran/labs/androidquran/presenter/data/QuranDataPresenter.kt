@@ -194,11 +194,12 @@ class QuranDataPresenter @Inject internal constructor(
 
   private fun actuallyCheckPages(totalPages: Int): Single<QuranDataStatus> {
     return Single.fromCallable {
+      val pageType = quranSettings.pageType
       val width = quranScreenInfo.widthParam
-      val havePortrait = quranFileUtils.haveAllImages(width, totalPages, true)
+      var havePortrait = quranFileUtils.haveAllImages(width, totalPages, true)
 
       val tabletWidth = quranScreenInfo.tabletWidthParam
-      val needLandscapeImages = if (quranScreenInfo.isDualPageMode && width != tabletWidth) {
+      var needLandscapeImages = if (quranScreenInfo.isDualPageMode && width != tabletWidth) {
         val haveLandscape = quranFileUtils.haveAllImages(tabletWidth, totalPages, true)
         Timber.d("checkPages: have portrait images: %s, have landscape images: %s",
             if (havePortrait) "yes" else "no", if (haveLandscape) "yes" else "no")
@@ -207,6 +208,12 @@ class QuranDataPresenter @Inject internal constructor(
         // either not dual screen mode or the widths are the same
         Timber.d("checkPages: have all images: %s", if (havePortrait) "yes" else "no")
         false
+      }
+
+      if ("tajweed" == pageType) {
+        // for tajweed, we download images on demand, so pretend we have them
+        havePortrait = true
+        needLandscapeImages = false
       }
 
       QuranDataStatus(width, tabletWidth, havePortrait, !needLandscapeImages, null, totalPages)

@@ -1,7 +1,6 @@
 plugins {
   id("quran.android.library.compose")
   alias(libs.plugins.metro)
-  alias(libs.plugins.ksp)
 }
 
 android.namespace = "com.quran.mobile.feature.audiobar"

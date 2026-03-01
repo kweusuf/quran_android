@@ -10,9 +10,13 @@ plugins {
   alias(libs.plugins.kover)
 }
 
-// whether or not to use Firebase - Firebase is enabled by default, and is only disabled for
-// providing apks for open source distribution stores.
-val useFirebase = !project.hasProperty("disableFirebase")
+// whether or not to use Firebase - disabled explicitly with -PdisableFirebase,
+// or implicitly when google-services.json is not present.
+val hasGoogleServicesConfig = fileTree(projectDir) {
+  include("google-services.json")
+  include("src/**/google-services.json")
+}.files.isNotEmpty()
+val useFirebase = !project.hasProperty("disableFirebase") && hasGoogleServicesConfig
 
 // only want to apply the Firebase plugin if we're building a release build. moving this to the
 // release build type won't work, since debug builds would also implicitly get the plugin.
@@ -49,20 +53,22 @@ android {
 
   buildFeatures.buildConfig = true
 
-  signingConfigs {
-    create("release") {
-      storeFile = file((project.property("STORE_FILE") as String))
-      storePassword = project.property("STORE_PASSWORD") as String
-      keyAlias = project.property("KEY_ALIAS") as String
-      keyPassword = project.property("KEY_PASSWORD") as String
-    }
+signingConfigs {
+  create("release") {
+    storeFile = file((project.property("STORE_FILE") as String))
+    storePassword = project.property("STORE_PASSWORD") as String
+    keyAlias = project.property("KEY_ALIAS") as String
+    keyPassword = project.property("KEY_PASSWORD") as String
   }
+}
 
   flavorDimensions += listOf("pageType")
   productFlavors {
-    create("madani") {
-      applicationId = "com.quran.labs.androidquran"
-    }
+create("madani") {
+  applicationId = "com.quran.labs.androidquran"
+  matchingFallbacks += listOf("debug")
+  signingConfig = signingConfigs.getByName("debug")
+}
   }
 
   buildTypes {
@@ -81,12 +87,12 @@ android {
       matchingFallbacks += "release"
     }
 
-    getByName("release") {
-      isMinifyEnabled = true
-      isShrinkResources = true
-      proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard.cfg")
-      signingConfig = signingConfigs.getByName("release")
-    }
+getByName("release") {
+  isMinifyEnabled = true
+  isShrinkResources = true
+  proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard.cfg")
+  signingConfig = signingConfigs.getByName("debug")
+}
   }
 
   applicationVariants.all {

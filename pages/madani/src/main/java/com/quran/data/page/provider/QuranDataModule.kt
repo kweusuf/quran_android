@@ -4,6 +4,7 @@ import com.quran.common.upgrade.LocalDataUpgrade
 import com.quran.common.upgrade.PreferencesUpgrade
 import com.quran.data.constant.DependencyInjectionConstants
 import com.quran.data.page.provider.madani.MadaniPageProvider
+import com.quran.data.page.provider.madani.TajweedPageProvider
 import com.quran.data.pageinfo.mapper.AyahMapper
 import com.quran.data.pageinfo.mapper.IdentityAyahMapper
 import com.quran.data.source.PageProvider
@@ -28,14 +29,28 @@ object QuranDataModule {
   @Named(DependencyInjectionConstants.FALLBACK_PAGE_TYPE)
   @JvmStatic
   @Provides
-  fun provideFallbackPageType(): String = "madani"
+  fun provideFallbackPageType(): String = "tajweed"
 
+/*
   @JvmStatic
   @Provides
   @IntoMap
   @StringKey("madani")
   fun provideMadaniPageSet(): PageProvider {
     return MadaniPageProvider()
+  }
+*/
+
+  // NOTE: new_madani, new_madani_1441, new_madani_1439_lines and madani_1441_lines are
+  // intentionally excluded because their zip/image files return HTTP 404 on
+  // files.quran.app as of 2026-03. Re-add them once the server hosts the assets.
+
+  @JvmStatic
+  @Provides
+  @IntoMap
+  @StringKey("tajweed")
+  fun provideTajweedPageSet(): PageProvider {
+    return TajweedPageProvider()
   }
 
   @JvmStatic

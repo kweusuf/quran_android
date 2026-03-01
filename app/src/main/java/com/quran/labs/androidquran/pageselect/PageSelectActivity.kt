@@ -98,10 +98,15 @@ class PageSelectActivity : AppCompatActivity() {
         // migrate the bookmarks
         presenter.migrateBookmarksData(pageType, type)
 
-        // and we can set up our new page type
+        // persist the new page type
         quranSettings.pageType = type
 
-        // go back to Quran Data Activity
+        // Re-initialize the app-scoped DI graph so it binds the PageProvider for the newly selected type
+        val app = applicationContext as com.quran.labs.androidquran.QuranApplication
+        app.applicationComponent = app.initializeInjector()
+        app.applicationComponent.inject(app)
+
+        // Start QuranDataActivity freshly
         val intent = Intent(this@PageSelectActivity, QuranDataActivity::class.java).apply {
           addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)
         }

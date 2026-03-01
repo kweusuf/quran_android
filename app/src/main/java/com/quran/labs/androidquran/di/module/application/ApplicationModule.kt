@@ -70,8 +70,13 @@ object ApplicationModule {
     @Named(DependencyInjectionConstants.FALLBACK_PAGE_TYPE) fallbackPageType: String
   ): String {
     val currentKey = quranSettings.pageType
-    val result = currentKey ?: fallbackPageType
-    if (currentKey == null) {
+    val result = if (currentKey == null || currentKey == "madani") {
+      "tajweed"
+    } else {
+      currentKey
+    }
+
+    if (currentKey != result) {
       quranSettings.pageType = result
     }
     return result

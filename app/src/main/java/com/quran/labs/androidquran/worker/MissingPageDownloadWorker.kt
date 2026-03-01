@@ -104,6 +104,6 @@ class MissingPageDownloadWorker(private val context: Context,
   }
 
   companion object {
-    private const val MISSING_PAGE_LIMIT = 50
+    private const val MISSING_PAGE_LIMIT = 700
   }
 }

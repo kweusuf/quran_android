@@ -142,7 +142,7 @@ internal fun AudioBar(
 }
 
 private val REPEAT_VALUES = listOf(0, 1, 2, 3, -1)
-private val SPEED_VALUES = listOf(0.5f, 0.75f, 1.0f, 1.25f, 1.5f)
+private val SPEED_VALUES = listOf(0.5f, 0.75f, 1.0f, 1.25f, 1.5f, 1.75f, 2.0f, 2.1f, 2.2f, 2.25f, 2.5f)
 
 @Preview
 @Composable
