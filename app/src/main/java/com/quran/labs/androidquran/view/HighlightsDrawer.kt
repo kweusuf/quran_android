@@ -31,11 +31,13 @@ class HighlightsDrawer(
   private val highlightCoordinates: () -> Map<AyahHighlight, List<AyahBounds>>?,
   private val currentHighlights: () -> SortedMap<HighlightType, Set<AyahHighlight>>?,
   private val superOnDraw: (Canvas) -> Unit,
+  private val horizontalOffset: () -> Float = { 0f },
   private vararg val highlightTypesFilter: HighlightType.Mode = HighlightType.Mode.entries.toTypedArray(),
 ) : ImageDrawHelper {
 
   // cached objects for onDraw
   private val scaledRect = RectF()
+  private val rectWithOffset = RectF()
   private val alreadyHighlighted = mutableMapOf<HighlightType.Mode, MutableSet<AyahHighlight>>()
 
   // Singleton object so we can share the cache across all pages
@@ -99,7 +101,14 @@ class HighlightsDrawer(
               bounds.bottom += underlineThickness
             }
 
-            image.imageMatrix.mapRect(scaledRect, bounds)
+            val hOffset = horizontalOffset()
+            if (hOffset != 0f) {
+              rectWithOffset.set(bounds)
+              rectWithOffset.offset(hOffset, 0f)
+              image.imageMatrix.mapRect(scaledRect, rectWithOffset)
+            } else {
+              image.imageMatrix.mapRect(scaledRect, bounds)
+            }
             scaledRect.offset(image.paddingLeft.toFloat(), image.paddingTop.toFloat())
 
             when (highlightType.mode) {

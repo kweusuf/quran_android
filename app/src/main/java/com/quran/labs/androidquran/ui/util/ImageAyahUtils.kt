@@ -27,21 +27,23 @@ object ImageAyahUtils {
   }
 
   fun getAyahFromCoordinates(coords: Map<String, List<AyahBounds>>?,
-                             imageView: HighlightingImageView?, xc: Float, yc: Float): SuraAyah? {
-    return getAyahBoundsFromCoordinates(coords, imageView, xc, yc)?.first
+                             imageView: HighlightingImageView?, xc: Float, yc: Float,
+                             horizontalOffset: Float = 0f): SuraAyah? {
+    return getAyahBoundsFromCoordinates(coords, imageView, xc, yc, horizontalOffset)?.first
   }
 
   private fun getAyahBoundsFromCoordinates(
       coords: Map<String, List<AyahBounds>>?,
       imageView: HighlightingImageView?,
       xc: Float,
-      yc: Float
+      yc: Float,
+      horizontalOffset: Float = 0f
   ): Pair<SuraAyah?, AyahBounds>? {
     if (coords == null || imageView == null) {
       return null
     }
 
-    val pageXY = getPageXY(xc, yc, imageView) ?: return null
+    val pageXY = getPageXY(xc, yc, imageView, horizontalOffset) ?: return null
 
     val x = pageXY[0]
     val y = pageXY[1]
@@ -156,7 +158,7 @@ object ImageAyahUtils {
   }
 
   fun getPageXY(
-    screenX: Float, screenY: Float, imageView: ImageView
+    screenX: Float, screenY: Float, imageView: ImageView, horizontalOffset: Float = 0f
   ): FloatArray? {
     if (imageView.drawable == null) {
       return null
@@ -166,6 +168,7 @@ object ImageAyahUtils {
     if (imageView.imageMatrix.invert(inverse)) {
       results = FloatArray(2)
       inverse.mapPoints(results, floatArrayOf(screenX, screenY))
+      results[0] = results[0] - horizontalOffset
       results[1] = results[1] - imageView.paddingTop
     }
     return results

@@ -29,7 +29,7 @@ class TajweedPageProvider : PageProvider {
   override fun getDataSource() = dataSource
 
   override fun getPageSizeCalculator(displaySize: DisplaySize): PageSizeCalculator =
-    DefaultPageSizeCalculator(displaySize)
+    TajweedPageSizeCalculator(displaySize)
 
   // Version 1 is special-cased in QuranFileUtils.isVersion() to return true immediately
   // so no zip download dialog is shown. Individual pages load on-demand.
@@ -38,12 +38,12 @@ class TajweedPageProvider : PageProvider {
   // Allow opening the reader without a bulk ZIP download.
   override fun getPageContentType(): PageContentType = PageContentType.Image
 
-  // Point to Madani for non-image data to leverage existing hosted assets.
-  override fun getImagesBaseUrl() = "$madaniBaseUrl/"
-  override fun getImagesZipBaseUrl() = "$madaniBaseUrl/zips/"
-  override fun getPatchBaseUrl() = "$madaniBaseUrl/patches/v"
-  override fun getAyahInfoBaseUrl() = "$madaniBaseUrl/databases/ayahinfo/"
-  override fun getDatabasesBaseUrl() = "$madaniBaseUrl/databases/"
+  // Point to Tajweed for metadata to ensure correct highlighting alignment.
+  override fun getImagesBaseUrl() = "$tajweedBaseUrl/"
+  override fun getImagesZipBaseUrl() = "$tajweedBaseUrl/zips/"
+  override fun getPatchBaseUrl() = "$tajweedBaseUrl/patches/v"
+  override fun getAyahInfoBaseUrl() = "$tajweedBaseUrl/databases/ayahinfo/"
+  override fun getDatabasesBaseUrl() = "$tajweedBaseUrl/databases/"
 
   override fun getAudioDirectoryName() = "audio"
   override fun getDatabaseDirectoryName() = "databases"
@@ -60,7 +60,8 @@ class TajweedPageProvider : PageProvider {
   /**
    * Maps a standard filename (e.g. "page001.png") to the Moot Tajweed image source.
    * HiIAmMoot repo uses "001.png", "002.png", etc. and is much higher resolution
-   * and better aligned with standard Madani coordinates than alternative JPG sources.
+   * (1340x1890) than the 1280px JPGs. These images have a 30px horizontal padding
+   * compared to the 1280px ayahinfo data, which the app handles via scaling/centering.
    */
   override fun getIndividualPageUrl(pageNumber: Int, filename: String): String {
     val paddedPage = String.format(Locale.US, "%03d", pageNumber)
@@ -68,7 +69,7 @@ class TajweedPageProvider : PageProvider {
   }
 
   companion object {
-    private const val madaniBaseUrl = "https://files.quran.app/hafs/madani"
+    private const val tajweedBaseUrl = "https://files.quran.app/hafs/tajweed"
     private const val githubBaseUrl =
       "https://raw.githubusercontent.com/HiIAmMoot/quran-android-tajweed-page-provider/main/images"
     private val dataSource by lazy { MadaniDataSource() }

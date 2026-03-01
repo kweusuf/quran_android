@@ -52,7 +52,8 @@ import dev.chrisbanes.insetter.Insetter;
 
 public class HighlightingImageView extends AppCompatImageView {
   // for debugging / visualizing glyph bounds:
-  // when enabled, will draw bounds around each glyph to visualize the glyph bounds
+  // when enabled, will draw bounds around each glyph to visualize the glyph
+  // bounds
   private static final boolean DEBUG_BOUNDS = false;
 
   private static int overlayTextColor = -1;
@@ -86,26 +87,44 @@ public class HighlightingImageView extends AppCompatImageView {
   private int horizontalSafeOffset = 0;
   private int verticalOffsetForScrolling = 0;
 
-  // Draws highlights that need to run before the page image is drawn (to apply clippings)
+  private float horizontalOffset = 0f;
+
+  // Draws highlights that need to run before the page image is drawn (to apply
+  // clippings)
   private final ImageDrawHelper clippingHighlightsDrawer = new HighlightsDrawer(
       () -> ayahCoordinates,
       () -> highlightCoordinates,
       () -> currentHighlights,
-      c -> { super.onDraw(c); return null; },
-      COLOR, HIDE
-  );
+      c -> {
+        super.onDraw(c);
+        return null;
+      },
+      () -> horizontalOffset,
+      COLOR, HIDE);
 
   // Draws remaining highlights that need to run after the page image is drawn
   private final ImageDrawHelper highlightsDrawer = new HighlightsDrawer(
       () -> ayahCoordinates,
       () -> highlightCoordinates,
       () -> currentHighlights,
-      c -> { super.onDraw(c); return null; },
-      HIGHLIGHT, BACKGROUND, UNDERLINE
-  );
+      c -> {
+        super.onDraw(c);
+        return null;
+      },
+      () -> horizontalOffset,
+      HIGHLIGHT, BACKGROUND, UNDERLINE);
 
-  private final ImageDrawHelper glyphBoundsDebuggingDrawer = DEBUG_BOUNDS ?
-      new GlyphBoundsDebuggingDrawer(() -> ayahCoordinates) : null;
+  public void setHorizontalOffset(float horizontalOffset) {
+    this.horizontalOffset = horizontalOffset;
+  }
+
+  public float getHorizontalOffset() {
+    return horizontalOffset;
+  }
+
+  private final ImageDrawHelper glyphBoundsDebuggingDrawer = DEBUG_BOUNDS
+      ? new GlyphBoundsDebuggingDrawer(() -> ayahCoordinates)
+      : null;
 
   public HighlightingImageView(Context context) {
     this(context, null);
@@ -120,10 +139,8 @@ public class HighlightingImageView extends AppCompatImageView {
       scrollableHeaderFooterSize = res.getDimensionPixelSize(R.dimen.page_overlay_size_scrollable);
       dualPageHeaderFooterSize = res.getDimensionPixelSize(R.dimen.page_overlay_size_dualPage);
       headerFooterFontSize = res.getDimensionPixelSize(R.dimen.page_overlay_font_size);
-      scrollableHeaderFooterFontSize =
-          res.getDimensionPixelSize(R.dimen.page_overlay_font_size_scrollable);
-      dualPageHeaderFooterFontSize =
-          res.getDimensionPixelSize(R.dimen.page_overlay_font_size_dualPage);
+      scrollableHeaderFooterFontSize = res.getDimensionPixelSize(R.dimen.page_overlay_font_size_scrollable);
+      dualPageHeaderFooterFontSize = res.getDimensionPixelSize(R.dimen.page_overlay_font_size_dualPage);
     }
 
     Insetter.builder()
@@ -143,15 +160,14 @@ public class HighlightingImageView extends AppCompatImageView {
   }
 
   public void setIsScrollable(boolean scrollable, boolean landscape) {
-    int topBottom = scrollable ? scrollableHeaderFooterSize :
-        landscape ? dualPageHeaderFooterSize : headerFooterSize;
+    int topBottom = scrollable ? scrollableHeaderFooterSize : landscape ? dualPageHeaderFooterSize : headerFooterSize;
     verticalOffsetForScrolling = topBottom;
     setPadding(horizontalSafeOffset,
         topBottom + topSafeOffset,
         horizontalSafeOffset,
         topBottom + bottomSafeOffset);
-    fontSize = scrollable ? scrollableHeaderFooterFontSize :
-        landscape ? dualPageHeaderFooterFontSize : headerFooterFontSize;
+    fontSize = scrollable ? scrollableHeaderFooterFontSize
+        : landscape ? dualPageHeaderFooterFontSize : headerFooterFontSize;
   }
 
   public void unHighlight(int surah, int ayah, HighlightType type) {
@@ -178,7 +194,7 @@ public class HighlightingImageView extends AppCompatImageView {
     if (!currentHighlights.isEmpty()) {
       currentHighlights.remove(type);
       if (type.isTransitionAnimated()) {
-        //stop animation here
+        // stop animation here
         if (animator != null) {
           // this check is essential because
           // if playing first time and stopping
@@ -198,7 +214,7 @@ public class HighlightingImageView extends AppCompatImageView {
   public void setAyahData(AyahCoordinates ayahCoordinates) {
     this.ayahCoordinates = ayahCoordinates;
     highlightCoordinates = new HashMap<>();
-    for (Map.Entry<String, List<AyahBounds>> entry: ayahCoordinates.getAyahCoordinates().entrySet()) {
+    for (Map.Entry<String, List<AyahBounds>> entry : ayahCoordinates.getAyahCoordinates().entrySet()) {
       highlightCoordinates.put(new SingleAyahHighlight(entry.getKey()), entry.getValue());
     }
   }
@@ -208,7 +224,9 @@ public class HighlightingImageView extends AppCompatImageView {
     if (isNightMode) {
       // avoid damaging the looks of the Quran page
       nightModeTextBrightness = (int) (50 * Math.log1p(backgroundBrightness) + textBrightness);
-      if (nightModeTextBrightness > 255) { nightModeTextBrightness = 255; }
+      if (nightModeTextBrightness > 255) {
+        nightModeTextBrightness = 255;
+      }
       // we need a new color filter now
       isColorFilterOn = false;
     }
@@ -219,7 +237,7 @@ public class HighlightingImageView extends AppCompatImageView {
 
   class AnimationUpdateListener implements ValueAnimator.AnimatorUpdateListener, Animator.AnimatorListener {
     /*
-    This is an inner class because it needs access to invalidate()
+     * This is an inner class because it needs access to invalidate()
      */
     Set<AyahHighlight> highlights;
     TransitionAyahHighlight transitionHighlight;
@@ -259,22 +277,24 @@ public class HighlightingImageView extends AppCompatImageView {
     }
   }
 
-  private void highlightFloatableAyah(Set<AyahHighlight> highlights, AyahHighlight destinationHighlight, HighlightAnimationConfig config) {
+  private void highlightFloatableAyah(Set<AyahHighlight> highlights, AyahHighlight destinationHighlight,
+      HighlightAnimationConfig config) {
     AyahHighlight previousHighlight = highlights.iterator().next();
     AyahHighlight sourceHighlight;
 
     List<AyahBounds> startingBounds;
     if (previousHighlight.isTransition()) {
       // The ayah changed during animating
-      startingBounds = (List<AyahBounds>)animator.getAnimatedValue();
+      startingBounds = (List<AyahBounds>) animator.getAnimatedValue();
       animator.cancel();
-      sourceHighlight = ((TransitionAyahHighlight)previousHighlight).getSource();
+      sourceHighlight = ((TransitionAyahHighlight) previousHighlight).getSource();
     } else {
       sourceHighlight = previousHighlight;
       startingBounds = highlightCoordinates.get(sourceHighlight);
     }
 
-    final TransitionAyahHighlight transitionHighlight = new TransitionAyahHighlight(sourceHighlight, destinationHighlight);
+    final TransitionAyahHighlight transitionHighlight = new TransitionAyahHighlight(sourceHighlight,
+        destinationHighlight);
 
     if (startingBounds == null) {
       startingBounds = new ArrayList<>();
@@ -406,10 +426,10 @@ public class HighlightingImageView extends AppCompatImageView {
     overlayParams.manzilText = manzilText;
     overlayParams.paint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.DEV_KERN_TEXT_FLAG);
     overlayParams.paint.setTextSize(fontSize);
-//    if (juzText.contains("ج")) {
-//      // change typeface for Arabic
-//      overlayParams.paint.setTypeface(TypefaceManager.getHeaderFooterTypeface(context));
-//    }
+    // if (juzText.contains("ج")) {
+    // // change typeface for Arabic
+    // overlayParams.paint.setTypeface(TypefaceManager.getHeaderFooterTypeface(context));
+    // }
     if (!didDraw) {
       invalidate();
     }
@@ -508,8 +528,9 @@ public class HighlightingImageView extends AppCompatImageView {
     canvas.save();
 
     // Draw highlights that involve clipping the canvas (HIDE, COLOR)
-    // Note: this must be done before the super.onDraw call so that HighlightsDrawer has a chance
-    //       to apply canvas clippings (e.g. hiding) before the image is drawn
+    // Note: this must be done before the super.onDraw call so that HighlightsDrawer
+    // has a chance
+    // to apply canvas clippings (e.g. hiding) before the image is drawn
     if (pageCoordinates != null) {
       clippingHighlightsDrawer.draw(pageCoordinates, canvas, this);
     }
@@ -517,7 +538,8 @@ public class HighlightingImageView extends AppCompatImageView {
     // Draw the page image (excluding clipped out sections)
     super.onDraw(canvas);
 
-    // Restore the canvas to remove any clippings so the remaining highlights/drawers don't get clipped
+    // Restore the canvas to remove any clippings so the remaining
+    // highlights/drawers don't get clipped
     canvas.restore();
 
     // Draw remaining highlights (other than HIDE, COLOR)

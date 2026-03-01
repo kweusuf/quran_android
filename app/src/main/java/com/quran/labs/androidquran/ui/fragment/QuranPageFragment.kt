@@ -101,6 +101,7 @@ class QuranPageFragment : Fragment(), PageController, QuranPage, QuranPageScreen
     val quranPageLayout = quranPageLayout
     if (isAdded && quranPageLayout != null) {
       quranPageLayout.updateView(quranSettings)
+      imageView?.setHorizontalOffset(if (quranSettings.pageType == "tajweed") 30f else 0f)
       if (!quranSettings.highlightBookmarks()) {
         imageView?.unHighlight(HighlightTypes.BOOKMARK)
       }

@@ -142,14 +142,15 @@ open class AyahImageTrackerItem @JvmOverloads constructor(
       coordinates,
       ayahView,
       x,
-      y
+      y,
+      ayahView.horizontalOffset
     ) else null
   }
 
   override fun getGlyphForPosition(page: Int, x: Float, y: Float): AyahGlyph? {
     return if (this.page == page) {
       // Convert screen x,y coordinates -> page x,y coordinates
-      val (pgX, pgY) = ImageAyahUtils.getPageXY(x, y, ayahView) ?: return null
+      val (pgX, pgY) = ImageAyahUtils.getPageXY(x, y, ayahView, ayahView.horizontalOffset) ?: return null
       // Return the glyph at that page x,y coordinates
       pageGlyphsCoords?.getGlyphAtPoint(pgX, pgY)
     } else null
