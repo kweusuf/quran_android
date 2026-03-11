@@ -1,4 +1,6 @@
 package com.quran.labs.androidquran.data
+ 
+import kotlin.jvm.JvmField
 
 import com.quran.data.core.QuranConstants
 
@@ -91,9 +93,13 @@ object Constants {
   const val PREF_SHOW_SIDELINES = "showSidelines"
   const val PREF_SHOW_LINE_DIVIDERS = "showLineDividers"
   const val PREF_APP_THEME = "appTheme"
+  const val PREF_DEFAULT_PLAYBACK_SPEED = "defaultPlaybackSpeed"
 
   // Themes
   const val THEME_LIGHT = "light"
   const val THEME_DARK = "dark"
   const val THEME_DEFAULT = "default"
+
+  @JvmField
+  val AUDIO_SPEEDS = QuranConstants.AUDIO_SPEEDS
 }

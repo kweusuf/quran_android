@@ -130,6 +130,15 @@ public class QuranSettings {
     }
     return val;
   }
+ 
+  public float getDefaultPlaybackSpeed() {
+    String str = prefs.getString(Constants.PREF_DEFAULT_PLAYBACK_SPEED, "1.0");
+    try {
+      return Float.parseFloat(str);
+    } catch (Exception e) {
+      return 1.0f;
+    }
+  }
 
   public int getAyahTextSize() {
     return prefs.getInt(Constants.PREF_AYAH_TEXT_SIZE,

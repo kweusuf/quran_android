@@ -11,6 +11,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updateLayoutParams
 import androidx.preference.CheckBoxPreference
+import androidx.preference.ListPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceGroup
@@ -94,7 +95,16 @@ class QuranSettingsFragment : PreferenceFragmentCompat() {
       val readingPrefs: Preference? = findPreference(Constants.PREF_READING_CATEGORY)
       (readingPrefs as PreferenceGroup).removePreference(pageChangePref)
     }
-
+ 
+    val speedPref = findPreference<ListPreference>(Constants.PREF_DEFAULT_PLAYBACK_SPEED)
+    if (speedPref != null) {
+      val speeds = Constants.AUDIO_SPEEDS
+      speedPref.entries = speeds.map {
+        if (it == 1.0f) "${it}x (${getString(R.string.default_label)})" else "${it}x"
+      }.toTypedArray()
+      speedPref.entryValues = speeds.map { it.toString() }.toTypedArray()
+    }
+ 
     // add additional injected preferences (if any)
     extraPreferences
       .sortedBy { it.order }

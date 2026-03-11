@@ -15,6 +15,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import com.quran.data.core.QuranConstants
 import com.quran.labs.androidquran.common.ui.core.QuranIcons
 import com.quran.labs.androidquran.common.ui.core.QuranTheme
 import com.quran.mobile.feature.audiobar.state.AudioBarState
@@ -142,7 +143,7 @@ internal fun AudioBar(
 }
 
 private val REPEAT_VALUES = listOf(0, 1, 2, 3, -1)
-private val SPEED_VALUES = listOf(0.5f, 0.75f, 1.0f, 1.25f, 1.5f, 1.75f, 2.0f, 2.1f, 2.2f, 2.25f, 2.5f)
+private val SPEED_VALUES = QuranConstants.AUDIO_SPEEDS
 
 @Preview
 @Composable

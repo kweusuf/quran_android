@@ -18,6 +18,8 @@ import com.quran.labs.androidquran.common.audio.model.playback.AudioRequest
 import com.quran.labs.androidquran.ui.PagerActivity
 import com.quran.labs.androidquran.ui.helpers.SlidingPagerAdapter
 import com.quran.labs.androidquran.ui.util.TypefaceManager
+import com.quran.labs.androidquran.data.Constants
+import com.quran.labs.androidquran.util.QuranSettings
 import com.quran.labs.androidquran.util.QuranUtils
 import com.quran.labs.androidquran.view.QuranSpinner
 import com.quran.mobile.di.AyahActionFragmentProvider
@@ -56,6 +58,9 @@ class AyahPlaybackFragment : AyahActionFragment() {
 
   @Inject
   lateinit var quranInfo: QuranInfo
+ 
+  @Inject
+  lateinit var quranSettings: QuranSettings
 
   object Provider : AyahActionFragmentProvider {
     override val order = SlidingPagerAdapter.AUDIO_PAGE
@@ -115,8 +120,8 @@ class AyahPlaybackFragment : AyahActionFragment() {
     repeatRangePicker.value = defaultRangeRepeat
     repeatVersePicker.value = defaultVerseRepeat
     playbackSpeedPicker.minValue = 1
-    playbackSpeedPicker.maxValue = SPEEDS.size
-    playbackSpeedPicker.displayedValues = SPEEDS.map { numberFormat.format(it) }.toTypedArray()
+    playbackSpeedPicker.maxValue = Constants.AUDIO_SPEEDS.size
+    playbackSpeedPicker.displayedValues = Constants.AUDIO_SPEEDS.map { numberFormat.format(it.toDouble()) }.toTypedArray()
     playbackSpeedPicker.value = DEFAULT_SPEED_INDEX + 1
     repeatRangePicker.setOnValueChangedListener { _: NumberPicker?, _: Int, newVal: Int ->
       if (newVal > 1) {
@@ -195,7 +200,7 @@ class AyahPlaybackFragment : AyahActionFragment() {
       val enforceRange = restrictToRange.isChecked
       var updatedRange = false
 
-      val speed = SPEEDS[playbackSpeedPicker.value - 1]
+      val speed = Constants.AUDIO_SPEEDS[playbackSpeedPicker.value - 1]
       if (currentStart != decidedStart || currentEnding != decidedEnd) {
         // different range or not playing, so make a new request
         updatedRange = true
@@ -331,7 +336,7 @@ class AyahPlaybackFragment : AyahActionFragment() {
         }
         rangeRepeatCount = 0
         verseRepeatCount = 0
-        currentSpeed = 1.0f
+        currentSpeed = quranSettings.defaultPlaybackSpeed
         decidedStart = null
         decidedEnd = null
         applyButton.setText(R.string.play_apply_and_play)
@@ -355,7 +360,7 @@ class AyahPlaybackFragment : AyahActionFragment() {
         restrictToRange.isChecked = shouldEnforce
         repeatRangePicker.value = rangeRepeatCount + 1
         repeatVersePicker.value = verseRepeatCount + 1
-        playbackSpeedPicker.value = SPEEDS.indexOf(currentSpeed) + 1
+        playbackSpeedPicker.value = Constants.AUDIO_SPEEDS.indexOf(currentSpeed) + 1
       }
     }
   }
@@ -364,7 +369,6 @@ class AyahPlaybackFragment : AyahActionFragment() {
     private val ITEM_LAYOUT = R.layout.sherlock_spinner_item
     private val ITEM_DROPDOWN_LAYOUT = R.layout.sherlock_spinner_dropdown_item
     private const val MAX_REPEATS = 25
-    private val SPEEDS = listOf(0.5f, 0.75f, 1.0f, 1.25f, 1.5f, 1.75f, 2.0f, 2.1f, 2.2f, 2.25f, 2.5f)
     private const val DEFAULT_SPEED_INDEX = 2
   }
 }

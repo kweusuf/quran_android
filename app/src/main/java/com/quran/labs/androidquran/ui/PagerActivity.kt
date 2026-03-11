@@ -1509,7 +1509,7 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
     val end = selectionEnd
     // handle the case of multiple ayat being selected and play them as a range if so
     val ending = if ((end == null || start == end || start.after(end))) null else end
-    playFromAyah(start, ending, page, 0, 0, ending != null, 1.0f)
+    playFromAyah(start, ending, page, 0, 0, ending != null, quranSettings.defaultPlaybackSpeed)
   }
 
   fun playFromAyah(

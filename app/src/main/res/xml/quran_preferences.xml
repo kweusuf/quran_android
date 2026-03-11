@@ -219,8 +219,16 @@
         android:summary="@string/prefs_download_amount_summary"
         android:title="@string/prefs_download_amount_title"
         app:iconSpaceReserved="false"/>
-
-    <Preference
+ 
+    <androidx.preference.ListPreference
+        android:defaultValue="1.0"
+        android:dialogTitle="@string/prefs_default_playback_speed_title"
+        android:key="@string/prefs_default_playback_speed"
+        android:summary="@string/prefs_default_playback_speed_summary"
+        android:title="@string/prefs_default_playback_speed_title"
+        app:iconSpaceReserved="false" />
+ 
+     <Preference
         android:key="@string/prefs_audio_manager_key"
         android:summary="@string/prefs_audio_manager_summary"
         android:title="@string/prefs_audio_manager"

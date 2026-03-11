@@ -202,6 +202,10 @@
   <string name="prefs_download_amount_summary">Preferred download amount for non-gapless audio</string>
   <string name="prefs_audio_manager" translatable="false">@string/audio_manager</string>
   <string name="prefs_audio_manager_summary">Manage and download Quranic audio</string>
+  <string name="prefs_default_playback_speed_title">Default playback speed</string>
+  <string name="prefs_default_playback_speed_summary">Default speed for audio recitation</string>
+  <string name="prefs_default_playback_speed" translatable="false">defaultPlaybackSpeed</string>
+  <string name="default_label">Default</string>
   <string name="downloaded_translations">Downloaded</string>
   <string name="available_translations">Available for download</string>
   <string name="dialog_ok">OK</string>
