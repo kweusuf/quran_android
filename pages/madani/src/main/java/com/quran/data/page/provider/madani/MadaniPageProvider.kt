@@ -32,7 +32,7 @@ class MadaniPageProvider : PageProvider {
 
   override fun getAyahInfoDirectoryName() = getDatabaseDirectoryName()
 
-  override fun getDatabasesBaseUrl() = "$baseUrl/databases/"
+  override fun getDatabasesBaseUrl() = "https://files.quran.app/hafs/databases/"
 
   override fun getAudioDatabasesBaseUrl() = "https://files.quran.app/hafs/databases/audio/"
 

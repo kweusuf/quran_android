@@ -380,9 +380,7 @@ class TranslationManagerActivity : AppCompatActivity(), SimpleDownloadListener,
       QuranDownloadService.DOWNLOAD_TYPE_TRANSLATION
     )
     var filename = selectedItem.translation.fileName
-    if (url.endsWith("zip")) {
-      filename += ".zip"
-    }
+    filename += ".zip"
     intent.putExtra(QuranDownloadService.EXTRA_OUTPUT_FILE_NAME, filename)
     startService(intent)
   }

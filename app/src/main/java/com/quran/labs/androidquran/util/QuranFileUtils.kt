@@ -372,10 +372,16 @@ class QuranFileUtils @Inject constructor(
   }
 
   private fun tryToSaveBitmap(bitmap: Bitmap, savePath: File): Boolean {
+    val tempFile = File(savePath.absolutePath + ".tmp")
     var output: FileOutputStream? = null
     try {
-      output = FileOutputStream(savePath)
-      return bitmap.compress(PNG, 100, output)
+      output = FileOutputStream(tempFile)
+      if (bitmap.compress(PNG, 100, output)) {
+        output.flush()
+        output.close()
+        output = null
+        return tempFile.renameTo(savePath)
+      }
     } catch (ioe: IOException) {
       // do nothing
     } finally {
@@ -386,6 +392,11 @@ class QuranFileUtils @Inject constructor(
         }
       } catch (e: Exception) {
         // ignore...
+      }
+      if (tempFile.exists()) {
+        try {
+          tempFile.delete()
+        } catch (_: Exception) {}
       }
     }
     return false
@@ -578,7 +589,7 @@ class QuranFileUtils @Inject constructor(
   }
 
   val arabicSearchDatabaseUrl: String
-    get() = databaseBaseUrl + QuranDataProvider.QURAN_ARABIC_DATABASE + ".zip"
+    get() = databaseBaseUrl + QuranDataProvider.QURAN_ARABIC_DATABASE + ".db"
 
   fun moveAppFiles(context: Context, newLocation: String): Boolean {
     if (QuranSettings.getInstance(context).appCustomLocation == newLocation) {

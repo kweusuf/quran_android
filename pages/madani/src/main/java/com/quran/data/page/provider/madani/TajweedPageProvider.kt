@@ -43,7 +43,7 @@ class TajweedPageProvider : PageProvider {
   override fun getImagesZipBaseUrl() = "$tajweedBaseUrl/zips/"
   override fun getPatchBaseUrl() = "$tajweedBaseUrl/patches/v"
   override fun getAyahInfoBaseUrl() = "$tajweedBaseUrl/databases/ayahinfo/"
-  override fun getDatabasesBaseUrl() = "$tajweedBaseUrl/databases/"
+  override fun getDatabasesBaseUrl() = "https://files.quran.app/hafs/databases/"
 
   override fun getAudioDirectoryName() = "audio"
   override fun getDatabaseDirectoryName() = "databases"
