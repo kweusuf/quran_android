@@ -32,12 +32,14 @@ import com.quran.labs.androidquran.ui.helpers.AyahTracker
 import com.quran.labs.androidquran.ui.helpers.QuranPage
 import com.quran.labs.androidquran.ui.translation.TranslationView
 import com.quran.labs.androidquran.ui.util.PageController
+import com.quran.labs.androidquran.util.QuranFileUtils
 import com.quran.labs.androidquran.util.QuranScreenInfo
 import com.quran.labs.androidquran.util.QuranSettings
 import com.quran.labs.androidquran.view.HighlightingImageView
 import com.quran.labs.androidquran.view.QuranImagePageLayout
 import com.quran.labs.androidquran.view.QuranTranslationPageLayout
 import com.quran.labs.androidquran.view.TabletView
+import com.quran.labs.androidquran.data.AyahInfoDatabaseProvider
 import com.quran.mobile.translation.model.LocalTranslation
 import com.quran.page.common.data.AyahCoordinates
 import com.quran.page.common.data.PageCoordinates
@@ -87,6 +89,8 @@ class TabletFragment : Fragment(), PageController, TranslationPresenter.Translat
   @Inject lateinit var imageDrawHelpers: Set<@JvmSuppressWildcards ImageDrawHelper>
   @Inject lateinit var readingEventPresenter: ReadingEventPresenter
   @Inject lateinit var pageProviderFactoryProvider: PageViewFactoryProvider
+  @Inject lateinit var quranFileUtils: QuranFileUtils
+  @Inject lateinit var ayahInfoDatabaseProvider: AyahInfoDatabaseProvider
 
   private var pageViewFactory: PageViewFactory? = null
   private var isCustomArabicPageType = false
@@ -141,6 +145,16 @@ class TabletFragment : Fragment(), PageController, TranslationPresenter.Translat
         this.leftTranslation = leftTranslation
         this.rightTranslation = rightTranslation
         mainView.setPageController(this, pageNumber + 1, pageNumber, quranInfo.skip)
+
+        if (quranSettings.pageType == "tajweed") {
+          val dbHandler = ayahInfoDatabaseProvider.getAyahInfoHandler()
+          val imgDir = quranFileUtils.getQuranImagesDirectory(quranScreenInfo.widthParam)
+          val pageWidth = ayahInfoDatabaseProvider.getPageWidth()
+          if (dbHandler != null) {
+            leftTranslation.setTajweedParams(dbHandler, pageWidth, imgDir)
+            rightTranslation.setTajweedParams(dbHandler, pageWidth, imgDir)
+          }
+        }
       } else {
         initSplitMode()
       }
@@ -175,6 +189,15 @@ class TabletFragment : Fragment(), PageController, TranslationPresenter.Translat
     val pagerActivity = activity as PagerActivity
     splitTranslationView?.setTranslationClickedListener { pagerActivity.toggleActionBar() }
     mainView.setPageController(this, pageNumber, quranInfo.skip)
+
+    if (quranSettings.pageType == "tajweed") {
+      val dbHandler = ayahInfoDatabaseProvider.getAyahInfoHandler()
+      val imgDir = quranFileUtils.getQuranImagesDirectory(quranScreenInfo.widthParam)
+      val pageWidth = ayahInfoDatabaseProvider.getPageWidth()
+      if (dbHandler != null) {
+        splitTranslationView?.setTajweedParams(dbHandler, pageWidth, imgDir)
+      }
+    }
   }
 
   override fun onStart() {
@@ -407,12 +430,12 @@ class TabletFragment : Fragment(), PageController, TranslationPresenter.Translat
     verses: List<QuranAyahInfo>
   ) {
     if (isSplitScreen) {
-      splitTranslationView?.setVerses(quranDisplayData, translations, verses)
+      splitTranslationView?.setVerses(page, quranDisplayData, translations, verses)
     } else {
       if (page == pageNumber) {
-        rightTranslation?.setVerses(quranDisplayData, translations, verses)
+        rightTranslation?.setVerses(page, quranDisplayData, translations, verses)
       } else if (page == pageNumber + 1) {
-        leftTranslation?.setVerses(quranDisplayData, translations, verses)
+        leftTranslation?.setVerses(page, quranDisplayData, translations, verses)
       }
     }
   }

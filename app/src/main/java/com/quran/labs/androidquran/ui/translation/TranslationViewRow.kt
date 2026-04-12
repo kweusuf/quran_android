@@ -16,7 +16,9 @@ internal class TranslationViewRow @JvmOverloads constructor(
   val linkPage: Int? = null,
   val isArabic: Boolean = false,
   val ayat: List<IntRange> = emptyList(),
-  private val footnotes: List<IntRange> = emptyList()
+  private val footnotes: List<IntRange> = emptyList(),
+  // The quran page this ayah lives on – needed for Tajweed image cropping.
+  val rowPage: Int = -1
 ) {
 
   fun footnoteCognizantText(
@@ -42,7 +44,8 @@ internal class TranslationViewRow @JvmOverloads constructor(
     Type.TRANSLATOR,
     Type.TRANSLATION_TEXT,
     Type.VERSE_NUMBER,
-    Type.SPACER
+    Type.SPACER,
+    Type.TAJWEED_AYAH
   )
   internal annotation class Type {
     companion object {
@@ -53,6 +56,7 @@ internal class TranslationViewRow @JvmOverloads constructor(
       const val TRANSLATION_TEXT = 4
       const val VERSE_NUMBER = 5
       const val SPACER = 6
+      const val TAJWEED_AYAH = 7
     }
   }
 }

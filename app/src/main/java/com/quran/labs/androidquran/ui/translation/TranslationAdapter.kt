@@ -1,7 +1,10 @@
 package com.quran.labs.androidquran.ui.translation
 
 import android.content.Context
+import android.graphics.Bitmap
 import android.graphics.Color
+import android.os.Handler
+import android.os.Looper
 import android.text.SpannableString
 import android.text.SpannableStringBuilder
 import android.text.Spanned
@@ -12,6 +15,7 @@ import android.text.style.SuperscriptSpan
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.annotation.LayoutRes
 import androidx.core.content.ContextCompat
@@ -22,6 +26,7 @@ import com.quran.data.model.SuraAyah
 import com.quran.data.model.highlight.HighlightType
 import com.quran.labs.androidquran.R
 import com.quran.labs.androidquran.common.QuranAyahInfo
+import com.quran.labs.androidquran.data.AyahInfoDatabaseHandler
 import com.quran.labs.androidquran.model.translation.ArabicDatabaseUtils
 import com.quran.labs.androidquran.ui.helpers.ExpandFootnoteSpan
 import com.quran.labs.androidquran.ui.helpers.ExpandTafseerSpan
@@ -32,6 +37,8 @@ import com.quran.labs.androidquran.util.QuranSettings
 import com.quran.labs.androidquran.util.QuranUtils
 import com.quran.labs.androidquran.view.AyahNumberView
 import com.quran.labs.androidquran.view.DividerView
+import java.io.File
+import java.util.concurrent.Executors
 import kotlin.math.ln1p
 import kotlin.math.min
 
@@ -44,6 +51,15 @@ internal class TranslationAdapter(
 ) : RecyclerView.Adapter<TranslationAdapter.RowViewHolder>() {
   private val inflater: LayoutInflater = LayoutInflater.from(context)
   private val data: MutableList<TranslationViewRow> = mutableListOf()
+  private val mainHandler = Handler(Looper.getMainLooper())
+  private val cropExecutor = Executors.newSingleThreadExecutor { r ->
+    Thread(r, "TajweedCropThread").also { it.isDaemon = true }
+  }
+
+  // Tajweed image cropping — set from TranslationView.setTajweedParams()
+  var ayahInfoDatabaseHandler: AyahInfoDatabaseHandler? = null
+  var dbPageWidth: Int = 1
+  var tajweedImageDirectory: File? = null
 
   private var ayahFontSize: Int = 0
   private var translationFontSize: Int = 0
@@ -297,6 +313,7 @@ internal class TranslationAdapter(
       TranslationViewRow.Type.SPACER -> R.layout.quran_translation_spacer_row
       TranslationViewRow.Type.VERSE_NUMBER -> R.layout.quran_translation_verse_number_row
       TranslationViewRow.Type.TRANSLATOR -> R.layout.quran_translation_translator_row
+      TranslationViewRow.Type.TAJWEED_AYAH -> R.layout.quran_translation_tajweed_row
       else -> R.layout.quran_translation_text_row
     }
 
@@ -405,6 +422,36 @@ internal class TranslationAdapter(
         }
         holder.text.text = text
       }
+      // tajweed ayah image row
+      holder.tajweedImage != null -> {
+        // Clear any previous image first to avoid stale bitmaps during recycling
+        holder.tajweedImage.setImageBitmap(null)
+
+        val db = ayahInfoDatabaseHandler
+        val imgDir = tajweedImageDirectory
+        if (db != null && imgDir != null) {
+          val page = row.rowPage
+          val sura = row.ayahInfo.sura
+          val ayah = row.ayahInfo.ayah
+          val pageWidth = dbPageWidth
+          // format: page001.png … page604.png
+          val imageFile = File(imgDir, "page%03d.png".format(page))
+
+          // Tag the holder so we can verify it hasn't been recycled by the time crop finishes
+          holder.itemView.tag = "$page:$sura:$ayah"
+
+          cropExecutor.execute {
+            val bitmap = TajweedAyahCropper.cropAyah(db, page, sura, ayah, pageWidth, imageFile)
+            mainHandler.post {
+              // Only update if the holder is still showing the same ayah
+              val currentTag = holder.itemView.tag
+              if (currentTag == "$page:$sura:$ayah" && bitmap != null) {
+                holder.tajweedImage.setImageBitmap(bitmap)
+              }
+            }
+          }
+        }
+      }
       // a divider row
       holder.divider != null -> {
         var showLine = true
@@ -510,7 +557,8 @@ internal class TranslationAdapter(
     val isHighlighted = row.ayahInfo.ayahId == highlightedAyah
     if (row.type != TranslationViewRow.Type.SURA_HEADER &&
       row.type != TranslationViewRow.Type.BASMALLAH &&
-      row.type != TranslationViewRow.Type.SPACER
+      row.type != TranslationViewRow.Type.SPACER &&
+      row.type != TranslationViewRow.Type.TAJWEED_AYAH
     ) {
       holder.wrapperView.setBackgroundColor(
         if (isHighlighted) ayahSelectionColor else 0
@@ -530,6 +578,7 @@ internal class TranslationAdapter(
     val text: TextView? = wrapperView.findViewById(R.id.text)
     val divider: DividerView? = wrapperView.findViewById(R.id.divider)
     val ayahNumber: AyahNumberView? = wrapperView.findViewById(R.id.ayah_number)
+    val tajweedImage: ImageView? = wrapperView.findViewById(R.id.tajweed_ayah_image)
 
     init {
       wrapperView.setOnClickListener(defaultClickListener)

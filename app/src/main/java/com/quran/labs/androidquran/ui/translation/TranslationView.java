@@ -23,6 +23,7 @@ import com.quran.data.model.selection.SelectionIndicator;
 import com.quran.labs.androidquran.common.LocalTranslationDisplaySort;
 import com.quran.labs.androidquran.common.QuranAyahInfo;
 import com.quran.labs.androidquran.common.TranslationMetadata;
+import com.quran.labs.androidquran.data.AyahInfoDatabaseHandler;
 import com.quran.labs.androidquran.data.QuranDisplayData;
 import com.quran.labs.androidquran.ui.PagerActivity;
 import com.quran.labs.androidquran.ui.helpers.HighlightTypes;
@@ -30,6 +31,7 @@ import com.quran.labs.androidquran.ui.util.PageController;
 import com.quran.labs.androidquran.util.QuranSettings;
 import com.quran.mobile.translation.model.LocalTranslation;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -48,6 +50,11 @@ public class TranslationView extends FrameLayout implements View.OnClickListener
   private PageController pageController;
   private LocalTranslation[] localTranslations;
   private SpacerDecoration spacerDecoration;
+
+  // Tajweed image cropping – supplied via setTajweedParams() after construction.
+  @Nullable private AyahInfoDatabaseHandler tajweedDbHandler = null;
+  private int tajweedDbPageWidth = 1;
+  @Nullable private File tajweedImageDirectory = null;
 
   public TranslationView(Context context) {
     this(context, null);
@@ -119,7 +126,26 @@ public class TranslationView extends FrameLayout implements View.OnClickListener
     this.pageController = controller;
   }
 
-  public void setVerses(@NonNull QuranDisplayData quranDisplayData,
+  /**
+   * Call this after construction to enable Tajweed ayah image rows.
+   * @param handler      AyahInfoDatabaseHandler for the current screen width
+   * @param pageWidth    Width that the db coordinates are calibrated to (e.g. 1280)
+   * @param imageDir     Directory containing the Tajweed page PNGs
+   */
+  public void setTajweedParams(@NonNull AyahInfoDatabaseHandler handler,
+                               int pageWidth,
+                               @NonNull File imageDir) {
+    tajweedDbHandler = handler;
+    tajweedDbPageWidth = pageWidth;
+    tajweedImageDirectory = imageDir;
+    // Also update the adapter's public vars so the crop can start immediately
+    translationAdapter.setAyahInfoDatabaseHandler(handler);
+    translationAdapter.setDbPageWidth(pageWidth);
+    translationAdapter.setTajweedImageDirectory(imageDir);
+  }
+
+  public void setVerses(int page, 
+                        @NonNull QuranDisplayData quranDisplayData,
                         @NonNull LocalTranslation[] translations,
                         @NonNull List<QuranAyahInfo> verses) {
 
@@ -142,7 +168,16 @@ public class TranslationView extends FrameLayout implements View.OnClickListener
       rows.add(new TranslationViewRow(TranslationViewRow.Type.VERSE_NUMBER, verse));
 
       if (verse.arabicText != null) {
-        rows.add(new TranslationViewRow(TranslationViewRow.Type.QURAN_TEXT, verse));
+        rows.add(new TranslationViewRow(TranslationViewRow.Type.QURAN_TEXT, verse,
+            null, -1, null, null, false,
+            Collections.emptyList(), Collections.emptyList(), page));
+
+        // If Tajweed images are available, add a cropped Tajweed image row directly below
+        if (tajweedImageDirectory != null && tajweedDbHandler != null) {
+          rows.add(new TranslationViewRow(TranslationViewRow.Type.TAJWEED_AYAH, verse,
+              null, -1, null, null, false,
+              Collections.emptyList(), Collections.emptyList(), page));
+        }
       }
 
       final LocalTranslation[] sortedTranslations = Arrays.copyOf(translations, translations.length);

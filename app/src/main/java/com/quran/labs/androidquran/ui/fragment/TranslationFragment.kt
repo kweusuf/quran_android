@@ -12,6 +12,7 @@ import com.quran.data.core.QuranInfo
 import com.quran.data.model.SuraAyah
 import com.quran.data.model.selection.AyahSelection
 import com.quran.labs.androidquran.common.QuranAyahInfo
+import com.quran.labs.androidquran.data.AyahInfoDatabaseProvider
 import com.quran.labs.androidquran.data.QuranDisplayData
 import com.quran.labs.androidquran.presenter.quran.ayahtracker.AyahTrackerItem
 import com.quran.labs.androidquran.presenter.quran.ayahtracker.AyahTrackerPresenter
@@ -24,6 +25,8 @@ import com.quran.labs.androidquran.ui.helpers.AyahTracker
 import com.quran.labs.androidquran.ui.helpers.QuranPage
 import com.quran.labs.androidquran.ui.translation.TranslationView
 import com.quran.labs.androidquran.ui.util.PageController
+import com.quran.labs.androidquran.util.QuranFileUtils
+import com.quran.labs.androidquran.util.QuranScreenInfo
 import com.quran.labs.androidquran.util.QuranSettings
 import com.quran.labs.androidquran.view.QuranTranslationPageLayout
 import com.quran.mobile.translation.model.LocalTranslation
@@ -45,6 +48,9 @@ class TranslationFragment : Fragment(), AyahInteractionHandler, QuranPage,
   @Inject lateinit var quranInfo: QuranInfo
   @Inject lateinit var quranDisplayData: QuranDisplayData
   @Inject lateinit var quranSettings: QuranSettings
+  @Inject lateinit var quranScreenInfo: QuranScreenInfo
+  @Inject lateinit var quranFileUtils: QuranFileUtils
+  @Inject lateinit var ayahInfoDatabaseProvider: AyahInfoDatabaseProvider
   @Inject lateinit var presenter: TranslationPresenter
   @Inject lateinit var ayahTrackerPresenter: AyahTrackerPresenter
   @Inject lateinit var ayahSelectedListener: AyahSelectedListener
@@ -72,6 +78,17 @@ class TranslationFragment : Fragment(), AyahInteractionHandler, QuranPage,
       val activity: Activity? = activity
       (activity as? PagerActivity?)?.toggleActionBar()
     }
+
+    // If the Tajweed mushaf is active, wire up the image cropping pipeline
+    if (quranSettings.pageType == "tajweed") {
+      val dbHandler = ayahInfoDatabaseProvider.getAyahInfoHandler()
+      val imgDir = quranFileUtils.getQuranImagesDirectory(quranScreenInfo.widthParam)
+      val pageWidth = ayahInfoDatabaseProvider.getPageWidth()
+      if (dbHandler != null) {
+        translationView.setTajweedParams(dbHandler, pageWidth, imgDir)
+      }
+    }
+
     return mainView
   }
 
@@ -134,7 +151,7 @@ class TranslationFragment : Fragment(), AyahInteractionHandler, QuranPage,
     translations: Array<LocalTranslation>,
     verses: List<QuranAyahInfo>
   ) {
-    translationView.setVerses(quranDisplayData, translations, verses)
+    translationView.setVerses(page, quranDisplayData, translations, verses)
   }
 
   override fun updateScrollPosition() {
